@@ -2,14 +2,13 @@
 #include "../Utility/InputManager.h"
 #include "../Utility/Utility.h"
 #include <cmath>
+#include "../Utility/TextureHolder.h"
 
 Player::Player()
 	:speed(START_SPEED), health(START_HEALTH), maxHealth(START_HEALTH), immuneMs(START_IMMUNE_MS),
-	arena(), resolution(), tileSize(0.f), aspeed(0.3f)
+	arena(), resolution(), tileSize(0.f), textureFileName("graphics/player.png")
 {
-	texture.loadFromFile("graphics/player.png");
-	sprite.setTexture(texture);
-
+	sprite.setTexture(TextureHolder::GetTexture(textureFileName));
 	Utility::SetOrigin(sprite, Pivots::CENTERCENTER);
 }
 
@@ -32,8 +31,10 @@ bool Player::OnHitted(Time timeHit)
 		health -= 10;
 		return true;
 	}
-
-	return true;
+	else
+	{
+		return true;
+	}
 };
 
 Time Player::GetLastTime() const
@@ -71,24 +72,25 @@ void Player::Update(float dt)
 {
 	// 사용자 입력
 	// 플레이어의 방향을 쓸 수 있게 되었다.
-	direction.x = InputManager::GetAxis(Axis::Horizontal);
-	direction.y = InputManager::GetAxis(Axis::Vertical);
-	float length = sqrt(direction.x * direction.x + direction.y * direction.y);
-	if (length != 0)
+	float h = InputManager::GetAxis(Axis::Horizontal);
+	float v = InputManager::GetAxis(Axis::Vertical);
+	Vector2f dir(h, v);
+
+	float length = sqrt(dir.x * dir.x + dir.y * dir.y);
+
+	if (length > 1) // 키입력이 있을 떄
 	{
-		direction /= length;
+		dir /= length;
 	}
 	// 이동
-	position += direction * speed * dt;
-	speed += aspeed;
+	position += dir * speed * dt;
+	sprite.setPosition(position);
+
 	// 회전
 	Vector2i mousePos = InputManager::GetMousePosition();
 	Vector2i mouseDir;
-	//resolution -> 해상도 중앙
-	/*mouseDir.x = mousePos.x - resolution.x * 0.5f;
-	mouseDir.y = mousePos.y - resolution.y * 0.5f;*/
-	mouseDir.x = mousePos.x - position.x;
-	mouseDir.y = mousePos.y - position.y;
+	mouseDir.x = mousePos.x - resolution.x * 0.5f;
+	mouseDir.y = mousePos.y - resolution.y * 0.5f;
 	sprite.setPosition(position);
 
 	float radian = atan2(mouseDir.y, mouseDir.x);

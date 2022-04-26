@@ -21,13 +21,17 @@
   <ItemGroup>
     <ClCompile Include="source\Player\Player.cpp" />
     <ClCompile Include="source\Utility\InputManager.cpp" />
+    <ClCompile Include="source\Utility\TextureHolder.cpp" />
     <ClCompile Include="source\Utility\Utility.cpp" />
+    <ClCompile Include="source\Zombie\Zombie.cpp" />
     <ClCompile Include="zombie-arena.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\Player\Player.h" />
     <ClInclude Include="source\Utility\InputManager.h" />
+    <ClInclude Include="source\Utility\TextureHolder.h" />
     <ClInclude Include="source\Utility\Utility.h" />
+    <ClInclude Include="source\Zombie\Zombie.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

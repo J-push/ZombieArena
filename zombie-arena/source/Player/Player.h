@@ -8,29 +8,31 @@ class Player
 {
 private:
 	// 상수는 const 붙이자.
-	const float START_SPEED = 200;
+	const float START_SPEED = 500;
 	// 게임시작 초기 체력
 	const float START_HEALTH = 100;
 	const float START_IMMUNE_MS = 200;
 
 	Vector2f position;
-	Vector2f acceleration;
-
+	
+	std::string textureFileName;
 	Sprite sprite;
 	Texture texture;
 
 	//해상도 설정
 	Vector2i resolution;
-	//arena 사이즈?
+	//충돌체크
 	IntRect arena;
 
 	int tileSize;
 	
-	// 어느방향으로 가야하는가
-	Vector2f direction;
 	// 속도
 	float speed;
-	float aspeed;
+
+	// 가속도
+	float curSpeed;
+	float accel;
+
 	// 현재 체력
 	int health;
 	// 현재 최대 체력
@@ -38,7 +40,6 @@ private:
 	float immuneMs;
 	// 피격당한 시간
 	Time lastHit;
-
 
 public:
 	// 기본값 설정

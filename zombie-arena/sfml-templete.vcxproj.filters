@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="소스 파일">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="리소스 파일">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -15,9 +11,8 @@
     <Filter Include="Utility">
       <UniqueIdentifier>{f6f7025d-920e-4079-a5ad-734593e6b8fc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Zombie">
+      <UniqueIdentifier>{286cace7-a20b-4022-bb77-b43a93adbd8f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -31,7 +26,13 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="zombie-arena.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>리소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Utility\TextureHolder.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Zombie\Zombie.cpp">
+      <Filter>Zombie</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +44,12 @@
     </ClInclude>
     <ClInclude Include="source\Utility\InputManager.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Utility\TextureHolder.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Zombie\Zombie.h">
+      <Filter>Zombie</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
