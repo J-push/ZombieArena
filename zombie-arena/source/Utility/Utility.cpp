@@ -1,5 +1,8 @@
 #include "Utility.h"
 
+random_device Utility::rd;
+mt19937 Utility::gen(rd());
+
 void Utility::SetOrigin(Text& text, Pivots preset)
 {
 	SetOrigin(text, text.getLocalBounds(), preset);
@@ -57,4 +60,11 @@ void Utility::SetOrigin(Transformable& tr, FloatRect bounds, Pivots preset)
 		break;
 	}
 
+}
+
+int Utility::RandomRange(int min, int excludeMax)
+{
+	int range = excludeMax - min;
+
+	return min + gen() % range;
 }

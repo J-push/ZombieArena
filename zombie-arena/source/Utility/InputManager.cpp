@@ -1,5 +1,7 @@
 #include "InputManager.h"
 #include <algorithm>
+#include <iostream>
+#include <cmath>
 
 std::map<Axis, AxisInfo> InputManager::mapAxis;
 list<Keyboard::Key> InputManager::downKeys;
@@ -13,6 +15,9 @@ void InputManager::Init()
 	AxisInfo info;
 	// Horizontal
 	info.axis = Axis::Horizontal;
+	info.sensi = 2.0f;
+	info.value = 0.f;
+	info.limit = 0.05f;
 	info.positiveKeys.clear();
 	info.positiveKeys.push_back(Keyboard::D);
 	info.positiveKeys.push_back(Keyboard::Right);
@@ -24,6 +29,9 @@ void InputManager::Init()
 
 	// Vertical
 	info.axis = Axis::Vertical;
+	info.sensi = 2.0f;
+	info.value = 0.f;
+	info.limit = 0.05f;
 	info.positiveKeys.clear();
 	info.positiveKeys.push_back(Keyboard::S);
 	info.positiveKeys.push_back(Keyboard::Down);
@@ -53,16 +61,57 @@ void InputManager::ProcessInput(const Event& event)
 		}
 		break;
 	case Event::KeyReleased:
-		if (!GetKey(event.key.code))
-		{
-			ingKeys.remove(event.key.code);
-			upKeys.push_back(event.key.code);
-		}
+		ingKeys.remove(event.key.code);
+		upKeys.push_back(event.key.code);
+		break;
+	default:
 		break;
 	}
 }
 
-int InputManager::GetAxis(list<Keyboard::Key> positive, list<Keyboard::Key> negative)
+void InputManager::Update(float dt)
+{
+	for (auto it = mapAxis.begin(); it != mapAxis.end(); ++it)
+	{
+		AxisInfo& ref = it->second;
+
+		// Axis(센시에 맞춰서)
+		int axis = GetAxisRaw(ref.axis);
+		if (axis == 0)
+		{
+			axis = ref.value > 0 ? -1 : 1;
+			if (abs(ref.value) < ref.limit)
+			{
+				axis = 0;
+				ref.value = 0;
+			}
+		}
+
+		ref.value += axis * ref.sensi * dt;
+
+		if (ref.value > 1.f)
+		{
+			ref.value = 1.f;
+		}
+
+		if (ref.value < -1.f)
+		{
+			ref.value = -1.f;
+		}
+	}
+}
+
+float InputManager::GetAxis(Axis axis)
+{
+	if (mapAxis.find(axis) != mapAxis.end())
+	{
+		return mapAxis[axis].value;
+	}
+	return 0.f;
+}
+
+// 키입력을 받아서 확인한후 리턴해줌
+int InputManager::GetAxisRaw(list<Keyboard::Key> positive, list<Keyboard::Key> negative)
 {
 	int axis = 0;
 	bool isPositive = false;
@@ -104,13 +153,13 @@ int InputManager::GetAxis(list<Keyboard::Key> positive, list<Keyboard::Key> nega
 	return axis;
 }
 
-int InputManager::GetAxis(Axis axis)
+int InputManager::GetAxisRaw(Axis axis)
 {
 	//find를 쓸떄에는 end를 확인해야한다.
 	auto pair = mapAxis.find(axis);
 	if (pair != mapAxis.end())
 	{
-		return GetAxis(pair->second.positiveKeys, pair->second.negativeKeys);
+		return GetAxisRaw(pair->second.positiveKeys, pair->second.negativeKeys);
 	}
 	return 0;
 }
