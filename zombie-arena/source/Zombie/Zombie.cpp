@@ -46,8 +46,27 @@ bool Zombie::IsAlive()
 	return false;
 }
 
-void Zombie::Spawn(float x, float y, ZombieTypes type)
+void Zombie::Normalize(Vector2f& dir)
 {
+	float length = sqrt(dir.x * dir.x + dir.y * dir.y);
+	if (length != 0)
+	{
+		dir /= length;
+	}
+	////if (length > 0)
+	//{
+	//	dir /= length;
+	//}
+	//if (length < dir * speed * dt;)
+	//{
+	//  position = playerPosition;
+	//}
+}
+
+void Zombie::Spawn(float x, float y, ZombieTypes type, IntRect arena)
+{
+	this->arena = arena;
+
 	auto& info = zombieInfo[(int)type];
 	sprite.setTexture(TextureHolder::GetTexture(info.textureFileName));
 	speed = info.speed;
@@ -61,22 +80,33 @@ void Zombie::Spawn(float x, float y, ZombieTypes type)
 }
 
 void Zombie::Update(float dt, Vector2f playerPosition)
-{
-	// 숙제
-	//좀비에서 플레이어로 가는 방향을 구해라 
-    //정규화해라.
-	//이동량이 나오면 더해줘라 
+{ 
+	//이동
 	float h = playerPosition.x - position.x;
 	float v = playerPosition.y - position.y;
 	Vector2f dir(h, v);
-	float length = sqrt(dir.x * dir.x + dir.y * dir.y);
-	if (length != 0)
-	{
-		dir /= length;
-	}
+	Normalize(dir);
 	position += dir * speed * dt;
 	sprite.setPosition(position);
 
+	if (position.x < arena.left + 50 + 25)
+	{
+		position.x = arena.left + 50 + 25;
+	}
+	else if (position.x > arena.width - 50 - 25)
+	{
+		position.x = arena.width - 50 - 25;
+	}
+	else if (position.y < arena.top + 50 + 25)
+	{
+		position.y = arena.top + 50 + 25;
+	}
+	else if (position.y > arena.height - 50 - 25)
+	{
+		position.y = arena.height - 50 - 25;
+	}
+
+	//회전
 	float radian = atan2(playerPosition.y - position.y, playerPosition.x - position.x);
 	float degree = radian * 180 / 3.141592f;
 
