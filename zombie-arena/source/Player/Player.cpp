@@ -1,14 +1,17 @@
 #include "Player.h"
-#include "../Utility/InputManager.h"
 #include <cmath>
-#include "../Utility/TextureHolder.h"
 #include <iostream>
 #include <algorithm>
+#include <sstream>
+#include "../Utility/InputManager.h"
+#include "../Utility/TextureHolder.h"
+#include "../../Pickup.h"
+#include "../../ReloadBar.h"
 
 Player::Player()
 	:speed(START_SPEED), health(START_HEALTH), maxHealth(START_HEALTH), immuneMs(START_IMMUNE_MS),
-	arena(), resolution(), tileSize(0.f), textureFileName("graphics/player.png"),
-	distanceToMuzzle(0.f)
+	arena(), resolution(), tileSize(0.f), textureFileName("graphics/player.png"), distanceToMuzzle(0.f)
+	,curClip(BULLETS_IN_GUN),highClip(BULLET_NUM),timer(DELAY_TIME) , reloading(false), playerDamage(PLAYER_DAMAGE)
 {
 	sprite.setTexture(TextureHolder::GetTexture(textureFileName));
 	Utility::SetOrigin(sprite, Pivots::CENTERCENTER);
@@ -66,7 +69,8 @@ void Player::Spawn(IntRect arena, Vector2i res, int tileSize)
 // 플레이어가 피격될 경우 
 bool Player::OnHitted(Time timeHit)
 {
-	if (timeHit.asMicroseconds() - lastHit.asMicroseconds() > immuneMs)
+	// 0.2초 동안은 안맞게
+	if (timeHit.asMilliseconds() - lastHit.asMilliseconds() > immuneMs)
 	{
 		lastHit = timeHit;
 		health -= 10;
@@ -74,7 +78,7 @@ bool Player::OnHitted(Time timeHit)
 	}
 	else
 	{
-		return true;
+		return false;
 	}
 };
 
@@ -93,9 +97,19 @@ Vector2f Player::GetPosition() const
 	return position;
 }
 
+int Player::GetClip()
+{
+	return curClip;
+}
+
 float Player::GetRotation() const
 {
 	return sprite.getRotation();
+}
+
+int Player::GetClipSum()
+{
+	return highClip;
 }
 
 Sprite Player::GetSprite() const
@@ -103,7 +117,7 @@ Sprite Player::GetSprite() const
 	return sprite;
 }
 
-int Player::GetHealth() const
+int Player::GetHealth()
 {
 	return health;
 }
@@ -111,6 +125,17 @@ int Player::GetHealth() const
 //사용자 입력 정보가 필요하다 (update)
 void Player::Update(float dt)
 {
+	if (reloading)
+	{
+		rebar.Reload(dt);
+		if (rebar.GetBar() < 0.2f)
+		{
+			curClip = 5;
+			rebar.SetBer();
+			reloading = false;
+		}
+	}
+	
 	// 사용자 입력
 	// 플레이어의 방향을 쓸 수 있게 되었다.
 	float h = InputManager::GetAxis(Axis::Horizontal);
@@ -155,15 +180,27 @@ void Player::Update(float dt)
 	float degree = radian * 180 / 3.141592f;
 
 	sprite.setRotation(degree);
+	rebar.Update(position, dt);
 
-	if (InputManager::GetMouseButton(Mouse::Button::Left))
+	timer -= dt;
+	if (InputManager::GetMouseButton(Mouse::Button::Left) && !reloading)
 	{
-		Shoot(Vector2f(mouseDir.x, mouseDir.y));
+		if (timer < 0 && curClip != 0)
+		{
+			Shoot(Vector2f(mouseDir.x, mouseDir.y));
+			curClip -= 1;
+			timer = DELAY_TIME;
+			if (curClip == 0)
+			{
+				reloading = true;
+			}
+		}
 	}
-
-	// end , begin 처음부터 끝까지 순회하는것
-	// rend , rbegin 뒤에서부터 순회하는것
-	// 발사체
+	
+	if (InputManager::GetKeyUp(Keyboard::R))
+	{
+		reloading = true;
+	}
 	auto it = useBullets.begin();
 	while (it != useBullets.end())
 	{
@@ -173,12 +210,68 @@ void Player::Update(float dt)
 		if (!bullet->IsActive())
 		{
 			it = useBullets.erase(it);
+			unuseBullets.push_back(bullet);
 		}
 		else
 		{
 			++it;
 		}
 	}
+}
+
+bool Player::UpdateCollision(const std::list<Pickup*> &items)
+{
+	FloatRect bounds = sprite.getGlobalBounds();
+	bool isCollided = false;
+
+	for (auto item : items)
+	{
+		if (bounds.intersects(item->GetGlobalBounds()))
+		{
+
+			item->GotIt();
+			isCollided = true;
+			switch (item->GetType())
+			{
+			case PickupTypes::Ammo:
+				if (item->GetEarnIt())
+				{
+					curClip += item->GotIt();
+					item->SetEarnIt();
+				}
+				break;
+			case PickupTypes::Health:
+				if (item->GetEarnIt())
+				{
+					health += item->GotIt();
+					if (health > maxHealth)
+					{
+						health = maxHealth;
+					}
+					item->SetEarnIt();
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		isCollided = true;
+	}
+	return isCollided;
+}
+
+bool Player::UpdateCollision(const std::vector<Zombie *> &zombies)
+{
+	bool isCollided = false;
+
+	for (auto bullet : useBullets)
+	{
+		if (bullet->UpdateCollision(zombies))
+		{
+			isCollided = true;
+		}
+	}
+	return isCollided;
 }
 
 void Player::Draw(RenderWindow& window)
@@ -188,6 +281,7 @@ void Player::Draw(RenderWindow& window)
 	{
 		window.draw(bullet->GetShape());
 	}
+	window.draw(rebar.GetShape());
 }
 
 void Player::GetHealthItem(int amount)
@@ -211,4 +305,44 @@ void Player::UpgradeSpeed()
 void Player::UpgradeMaxHealth()
 {
 	maxHealth += START_HEALTH * 0.2f;
+}
+
+int Player::GetPlayerDamage() const
+{
+	return playerDamage;
+}
+
+void Player::SetHiBul(int bul)
+{
+	highClip += bul;
+}
+
+void Player::SetBul(int bul)
+{
+	curClip = bul;
+}
+
+int Player::GetMaxHealth()
+{
+	return maxHealth;
+}
+
+void Player::SetHealth()
+{
+	health += 20;
+}
+
+void Player::SetMaxHealth()
+{
+	maxHealth += 20;
+}
+
+void Player::SetSpeed()
+{
+	speed += 1000;
+}
+
+void Player::InitHealth()
+{
+	health = 100;
 }

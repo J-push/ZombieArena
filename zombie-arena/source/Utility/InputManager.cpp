@@ -72,8 +72,11 @@ void InputManager::ProcessInput(const Event& event)
 		upKeys.push_back(event.key.code);
 		break;
 	case Event::MouseButtonPressed:
-		downButtons.push_back(event.mouseButton.button);
-		ingButtons.push_back(event.mouseButton.button);
+		if (!GetMouseButton(event.mouseButton.button))
+		{
+			downButtons.push_back(event.mouseButton.button);
+			ingButtons.push_back(event.mouseButton.button);
+		}
 		break;
 	case Event::MouseButtonReleased:
 		ingButtons.remove(event.mouseButton.button);

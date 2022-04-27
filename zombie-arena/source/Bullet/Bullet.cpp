@@ -1,8 +1,10 @@
 #include "Bullet.h"
 #include "../Utility/Utility.h"
 #include "../Utility/TextureHolder.h"
+#include "../Zombie/Zombie.h"
+
 Bullet::Bullet()
-	:speed(DEFAULT_SPEED), isActive(false)
+	:speed(DEFAULT_SPEED), isActive(false), distance(DEFAULT_DISTANCE)
 {
 	shape.setSize(Vector2f(30, 10));
 	Utility::SetOrigin(shape, Pivots::CENTERCENTER);
@@ -21,7 +23,6 @@ bool Bullet::IsActive()
 void Bullet::Shoot(Vector2f pos, Vector2f dir)
 {
 	SetActive(true);
-
 	distance = 0.f;
 	position = pos;
 	shape.setPosition(position);
@@ -48,6 +49,26 @@ void Bullet::Update(float dt)
 	}
 }
 
+bool Bullet::UpdateCollision(const std::vector<Zombie *> &zombies)
+{
+	FloatRect bounds = shape.getGlobalBounds();
+
+	for (auto zombie : zombies)
+	{
+		//살아있는 좀비
+		if (zombie->IsAlive())
+		{
+			if (bounds.intersects(zombie->GetGlobalBound()))
+			{
+				zombie->OnHitted();
+				Stop();
+
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 RectangleShape Bullet::GetShape()
 {

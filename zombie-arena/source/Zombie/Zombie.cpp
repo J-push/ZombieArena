@@ -1,6 +1,8 @@
 #include "Zombie.h"
 #include "../Utility/TextureHolder.h"
 #include "../Utility/Utility.h"
+#include <iostream>
+#include "../Player/Player.h"
 
 std::vector<ZombieInfo> Zombie::zombieInfo;
 bool Zombie::isInitInfo = false;
@@ -37,13 +39,20 @@ Zombie::Zombie()
 
 bool Zombie::OnHitted()
 {
-	// 나중에
+	Player player;
+	health -= player.GetPlayerDamage();
+	if (health == 0)
+	{
+		sprite.setTexture(TextureHolder::GetTexture("graphics/blood.png"));
+		zombieState = ZombieState::DEATH;
+	}
+
 	return false;
 }
 
 bool Zombie::IsAlive()
 {
-	return false;
+	return ZombieState::ALIVE == zombieState;
 }
 
 void Zombie::Normalize(Vector2f& dir)
@@ -53,21 +62,13 @@ void Zombie::Normalize(Vector2f& dir)
 	{
 		dir /= length;
 	}
-	////if (length > 0)
-	//{
-	//	dir /= length;
-	//}
-	//if (length < dir * speed * dt;)
-	//{
-	//  position = playerPosition;
-	//}
 }
 
-void Zombie::Spawn(float x, float y, ZombieTypes type, IntRect arena)
-{
-	this->arena = arena;
 
-	auto& info = zombieInfo[(int)type];
+void Zombie::Spawn(float x, float y, ZombieTypes type)
+{
+	zombieState = ZombieState::ALIVE;
+	auto &info = zombieInfo[(int)type];
 	sprite.setTexture(TextureHolder::GetTexture(info.textureFileName));
 	speed = info.speed;
 	health = info.health;
@@ -79,8 +80,20 @@ void Zombie::Spawn(float x, float y, ZombieTypes type, IntRect arena)
 	sprite.setPosition(position);
 }
 
-void Zombie::Update(float dt, Vector2f playerPosition)
+void Zombie::Update(float dt, Vector2f playerPosition, IntRect arena)
 { 
+	switch (zombieState)
+	{
+	case ZombieState::DEATH:
+		deleteBloodTime -= dt;
+		if (deleteBloodTime < 0)
+		{
+			zombieState = ZombieState::DROP;
+		}
+		return;
+	case ZombieState::DROP:
+		return;
+	}
 	//이동
 	float h = playerPosition.x - position.x;
 	float v = playerPosition.y - position.y;
@@ -113,6 +126,19 @@ void Zombie::Update(float dt, Vector2f playerPosition)
 	sprite.setRotation(degree);
 }
 
+bool Zombie::UpdateCollision(Time time, Player &player)
+{
+	if (sprite.getGlobalBounds().intersects(player.GetGlobalBound()))
+	{
+		if (player.OnHitted(time))
+		{
+			return player.OnHitted(time);
+		}
+	}
+
+	return false;
+}
+
 FloatRect Zombie::GetGlobalBound()
 {
 	return sprite.getGlobalBounds();
@@ -121,4 +147,16 @@ FloatRect Zombie::GetGlobalBound()
 Sprite Zombie::GetSprite()
 {
 	return sprite;
+}
+
+void Zombie::Draw(RenderWindow &window)
+{
+	if (zombieState == ZombieState::ALIVE)
+	{
+		window.draw(sprite);
+	}
+	else if (zombieState == ZombieState::DEATH)
+	{
+		window.draw(sprite);
+	}
 }

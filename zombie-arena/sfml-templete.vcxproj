@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Pickup.cpp" />
+    <ClCompile Include="ReloadBar.cpp" />
     <ClCompile Include="source\Bullet\Bullet.cpp" />
     <ClCompile Include="source\Player\Player.cpp" />
     <ClCompile Include="source\Utility\InputManager.cpp" />
@@ -30,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pickup.h" />
+    <ClInclude Include="ReloadBar.h" />
     <ClInclude Include="source\Bullet\Bullet.h" />
     <ClInclude Include="source\Player\Player.h" />
     <ClInclude Include="source\Utility\InputManager.h" />

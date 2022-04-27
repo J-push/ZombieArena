@@ -41,6 +41,7 @@
       <Filter>Bullet</Filter>
     </ClCompile>
     <ClCompile Include="Pickup.cpp" />
+    <ClCompile Include="ReloadBar.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\Player\Player.h">
@@ -62,5 +63,6 @@
       <Filter>Bullet</Filter>
     </ClInclude>
     <ClInclude Include="Pickup.h" />
+    <ClInclude Include="ReloadBar.h" />
   </ItemGroup>
 </Project>
