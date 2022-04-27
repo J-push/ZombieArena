@@ -1,6 +1,8 @@
 #include "Zombie.h"
 #include "../Utility/TextureHolder.h"
 #include "../Utility/Utility.h"
+#include <iostream>
+#include "../Player/Player.h"
 
 std::vector<ZombieInfo> Zombie::zombieInfo;
 bool Zombie::isInitInfo = false;
@@ -38,12 +40,13 @@ Zombie::Zombie()
 bool Zombie::OnHitted()
 {
 	// ³ªÁß¿¡
+	std::cout << "HITTED" << std::endl;
 	return false;
 }
 
 bool Zombie::IsAlive()
 {
-	return false;
+	return alive;
 }
 
 void Zombie::Normalize(Vector2f& dir)
@@ -111,6 +114,19 @@ void Zombie::Update(float dt, Vector2f playerPosition)
 	float degree = radian * 180 / 3.141592f;
 
 	sprite.setRotation(degree);
+}
+
+bool Zombie::UpdateCollision(Time time, Player &player)
+{
+	if (sprite.getGlobalBounds().intersects(player.GetGlobalBound()))
+	{
+		if (player.OnHitted(time))
+		{
+			return player.OnHitted(time);
+		}
+	}
+
+	return false;
 }
 
 FloatRect Zombie::GetGlobalBound()

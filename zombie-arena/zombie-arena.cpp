@@ -6,6 +6,7 @@
 #include "source/Utility/TextureHolder.h"
 #include "source/Zombie/Zombie.h"
 #include "source/Bullet/Bullet.h"
+#include "Pickup.h"
 
 //배경 만들기
 int CreateBackground(VertexArray& va, IntRect arena)
@@ -102,11 +103,30 @@ int main()
     //카메라
     View mainView(FloatRect(0, 0, resolution.x, resolution.y));
 
+    View uiView(FloatRect(0, 0, resolution.x, resolution.y));
+
+
+
+
+
+
+
+
     InputManager::Init();
     
+    //arena 크기
     IntRect arena;
-    arena.width = 1000;
-    arena.height = 1000;
+    arena.width = 1200;
+    arena.height = 1200;
+
+    Pickup ammoPickup(PickupTypes::Ammo);
+    Pickup healthPickup(PickupTypes::Health);
+    ammoPickup.SetArena(arena);
+    healthPickup.SetArena(arena);
+
+    std::list<Pickup *>items;
+    items.push_back(&ammoPickup);
+    items.push_back(&healthPickup);
 
     Player player;
     player.Spawn(arena, resolution, 0.f);
@@ -115,6 +135,7 @@ int main()
     CreateZombies(zombies, 10 ,arena);
 
     Clock clock;   
+    Time playTime;
 
     Texture textBackground = TextureHolder::GetTexture("graphics/background_sheet.png");
     Bullet bullet;
@@ -124,6 +145,7 @@ int main()
     while (window.isOpen())
     {
         Time dt = clock.restart();
+        playTime += dt;
 
         InputManager::ClearInput();
 
@@ -148,11 +170,34 @@ int main()
             zombie->Update(dt.asSeconds(), player.GetPosition());
         }
 
+        ammoPickup.Update(dt.asSeconds());
+        healthPickup.Update(dt.asSeconds());
+
+
+        // Collision
+        player.UpdateCollision(zombies);
+        for (auto zombie : zombies)
+        {
+            if (zombie->UpdateCollision(playTime, player))
+            {
+                break;
+            }
+        }
+        player.UpdateCollision(items);
+
         // Draw
         window.clear();
         window.setView(mainView);
         window.draw(tileMap, &textBackground);
 
+        if (ammoPickup.IsSpawned())
+        {
+            window.draw(ammoPickup.GetSprite());
+        }
+        if (healthPickup.IsSpawned())
+        {
+            window.draw(healthPickup.GetSprite());
+        }
         for (auto zombie : zombies)
         {
             window.draw(zombie->GetSprite());
@@ -160,6 +205,9 @@ int main()
         player.Draw(window);
 
         window.draw(spriteCrosshair);
+
+        window.setView(uiView);
+        //UI Draws
 
         window.display();
     }

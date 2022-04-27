@@ -6,6 +6,8 @@
 
 using namespace sf;
 
+class Pickup;
+
 class Player
 {
 private:
@@ -15,11 +17,12 @@ private:
 	// 게임시작 초기 체력
 	const float START_HEALTH = 100;
 	const float START_IMMUNE_MS = 200;
-
+	const float DELAY_TIMER = 0.3f;
 	Vector2f position;
 	
 	std::string textureFileName;
 	Sprite sprite;
+	Sprite bullet;
 	Texture texture;
 
 	//해상도 설정
@@ -41,8 +44,11 @@ private:
 	// 현재 최대 체력
 	int maxHealth;
 	float immuneMs;
+	bool immune;
 	// 피격당한 시간
 	Time lastHit;
+
+	float timer;
 
 	const int BULLET_CACHE_SIZE = 1000;
 	std::list<Bullet*> unuseBullets;
@@ -69,7 +75,8 @@ public:
 	int GetHealth() const;
 	// x y 요소가 int라서 2i
 	void Update(float dt);
-
+	bool UpdateCollision(const std::list<Pickup*> &items);
+	bool UpdateCollision(const std::vector<Zombie *> &zombies);
 	void Draw(RenderWindow& window);
 
 	void GetHealthItem(int amount);

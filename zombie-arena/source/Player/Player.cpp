@@ -4,12 +4,14 @@
 #include "../Utility/TextureHolder.h"
 #include <iostream>
 #include <algorithm>
+#include "../../Pickup.h"
 
 Player::Player()
 	:speed(START_SPEED), health(START_HEALTH), maxHealth(START_HEALTH), immuneMs(START_IMMUNE_MS),
 	arena(), resolution(), tileSize(0.f), textureFileName("graphics/player.png"),
 	distanceToMuzzle(0.f)
 {
+
 	sprite.setTexture(TextureHolder::GetTexture(textureFileName));
 	Utility::SetOrigin(sprite, Pivots::CENTERCENTER);
 
@@ -66,16 +68,15 @@ void Player::Spawn(IntRect arena, Vector2i res, int tileSize)
 // 플레이어가 피격될 경우 
 bool Player::OnHitted(Time timeHit)
 {
-	if (timeHit.asMicroseconds() - lastHit.asMicroseconds() > immuneMs)
+	// 0.2초 동안은 안맞게
+	if (timeHit.asMilliseconds() - lastHit.asMilliseconds() > immuneMs)
 	{
+		std::cout << timeHit.asSeconds() << std::endl;
 		lastHit = timeHit;
 		health -= 10;
 		return true;
 	}
-	else
-	{
-		return true;
-	}
+	return false;
 };
 
 Time Player::GetLastTime() const
@@ -156,13 +157,20 @@ void Player::Update(float dt)
 
 	sprite.setRotation(degree);
 
+	timer -= dt;
+
 	if (InputManager::GetMouseButton(Mouse::Button::Left))
 	{
-		Shoot(Vector2f(mouseDir.x, mouseDir.y));
+		if (timer < 0)
+		{
+			Shoot(Vector2f(mouseDir.x, mouseDir.y));
+			timer = DELAY_TIMER;
+		}
 	}
 
 	// end , begin 처음부터 끝까지 순회하는것
 	// rend , rbegin 뒤에서부터 순회하는것
+	// 
 	// 발사체
 	auto it = useBullets.begin();
 	while (it != useBullets.end())
@@ -173,12 +181,44 @@ void Player::Update(float dt)
 		if (!bullet->IsActive())
 		{
 			it = useBullets.erase(it);
+			unuseBullets.push_back(bullet);
 		}
 		else
 		{
 			++it;
 		}
 	}
+}
+
+bool Player::UpdateCollision(const std::list<Pickup*> &items)
+{
+	FloatRect bounds = sprite.getGlobalBounds();
+	bool isCollided = false;
+
+	for (auto item : items)
+	{
+		if (bounds.intersects(item->GetGlobalBounds()))
+		{
+			item->GotIt();
+		}
+		isCollided = true;
+	}
+	return isCollided;
+}
+
+bool Player::UpdateCollision(const std::vector<Zombie *> &zombies)
+{
+	bool isCollided = false;
+
+	for (auto bullet : useBullets)
+	{
+		if (bullet->UpdateCollision(zombies))
+		{
+			isCollided = true;
+		}
+	}
+
+	return isCollided;
 }
 
 void Player::Draw(RenderWindow& window)
