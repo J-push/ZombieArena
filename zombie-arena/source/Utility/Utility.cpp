@@ -68,3 +68,26 @@ int Utility::RandomRange(int min, int excludeMax)
 
 	return min + gen() % range;
 }
+
+float Utility::GetLength(const Vector2f& vector)
+{
+	return sqrt(vector.x * vector.x + vector.y * vector.y);
+}
+
+Vector2f Utility::Normalize(Vector2f& vector)
+{
+	float length = GetLength(vector);
+	if (length > 0)
+	{
+		vector /= length;
+	}
+	return vector;
+}
+
+float Utility::GetAngle(const Vector2f& from, const Vector2f& to)
+{
+	Vector2f dir = to - from;
+	float radian = atan2(dir.y, dir.x);
+	float degree = radian * 180 / 3.141592f;
+	return degree;
+}

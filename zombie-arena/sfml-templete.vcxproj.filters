@@ -14,6 +14,9 @@
     <Filter Include="Zombie">
       <UniqueIdentifier>{286cace7-a20b-4022-bb77-b43a93adbd8f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Bullet">
+      <UniqueIdentifier>{52a59268-84b0-4961-8321-d11668b7ea73}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Utility\Utility.cpp">
@@ -34,6 +37,10 @@
     <ClCompile Include="source\Zombie\Zombie.cpp">
       <Filter>Zombie</Filter>
     </ClCompile>
+    <ClCompile Include="source\Bullet\Bullet.cpp">
+      <Filter>Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="Pickup.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\Player\Player.h">
@@ -51,5 +58,9 @@
     <ClInclude Include="source\Zombie\Zombie.h">
       <Filter>Zombie</Filter>
     </ClInclude>
+    <ClInclude Include="source\Bullet\Bullet.h">
+      <Filter>Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="Pickup.h" />
   </ItemGroup>
 </Project>

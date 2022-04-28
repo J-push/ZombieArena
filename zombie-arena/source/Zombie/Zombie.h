@@ -3,6 +3,8 @@
 
 using namespace sf;
 
+class Player;
+
 enum class ZombieTypes
 {
 	BLOATER,
@@ -27,7 +29,10 @@ private:
 
 	Vector2f position;
 	Sprite sprite;
-	
+
+	//충돌체크
+	IntRect arena;
+
 	float speed;
 	float health;
 
@@ -42,8 +47,12 @@ public:
 
 	bool OnHitted();
 	bool IsAlive();
-	void Spawn(float x, float y, ZombieTypes type);
+	void Normalize(Vector2f& dir);
+	void Spawn(float x, float y, ZombieTypes type, IntRect arena);
 	void Update(float dt, Vector2f playerPosition);
+
+	bool UpdateCollision(Time time, Player &player);
+
 
 	FloatRect GetGlobalBound();
 	Sprite GetSprite();
