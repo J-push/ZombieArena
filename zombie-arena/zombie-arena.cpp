@@ -2,7 +2,6 @@
 #include "source/Utility/InputManager.h"
 #include "source/Utility/Utility.h"
 #include "source/Player/Player.h"
-#include <iostream>
 #include "source/Utility/TextureHolder.h"
 #include "source/Zombie/Zombie.h"
 #include "source/Bullet/Bullet.h"
@@ -263,12 +262,21 @@ int main()
 
     View mainView(FloatRect(0, 0, resolution.x, resolution.y));
     View uiView(FloatRect(0, 0, resolution.x, resolution.y));
-
     InputManager::Init();
-
+    
+    //arena 크기
     IntRect arena;
-    arena.width = 1000;
-    arena.height = 1000;
+    arena.width = 1200;
+    arena.height = 1200;
+
+    Pickup ammoPickup(PickupTypes::Ammo);
+    Pickup healthPickup(PickupTypes::Health);
+    ammoPickup.SetArena(arena);
+    healthPickup.SetArena(arena);
+
+    std::list<Pickup *>items;
+    items.push_back(&ammoPickup);
+    items.push_back(&healthPickup);
 
     Pickup ammoPickup(PickupTypes::Ammo);
     Pickup healthPickup(PickupTypes::Health);
@@ -303,6 +311,8 @@ int main()
     {
         Time dt = clock.restart();
         playTime += dt;
+        playTime += dt;
+
         InputManager::ClearInput();
 
         sf::Event event;
@@ -412,11 +422,25 @@ int main()
                 playerDie = true;
             }
 
-            // Draw
-            window.clear();
+        ammoPickup.Update(dt.asSeconds());
+        healthPickup.Update(dt.asSeconds());
 
-            window.setView(mainView);
-            window.draw(tileMap, &texBackground);
+
+        // Collision
+        player.UpdateCollision(zombies);
+        for (auto zombie : zombies)
+        {
+            if (zombie->UpdateCollision(playTime, player))
+            {
+                break;
+            }
+        }
+        player.UpdateCollision(items);
+
+        // Draw
+        window.clear();
+        window.setView(mainView);
+        window.draw(tileMap, &texBackground);
 
             for (auto item : items)
             {

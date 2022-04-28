@@ -13,6 +13,7 @@ Player::Player()
 	arena(), resolution(), tileSize(0.f), textureFileName("graphics/player.png"), distanceToMuzzle(0.f)
 	,curClip(BULLETS_IN_GUN),highClip(BULLET_NUM),timer(DELAY_TIME) , reloading(false), playerDamage(PLAYER_DAMAGE)
 {
+
 	sprite.setTexture(TextureHolder::GetTexture(textureFileName));
 	Utility::SetOrigin(sprite, Pivots::CENTERCENTER);
 
@@ -72,6 +73,7 @@ bool Player::OnHitted(Time timeHit)
 	// 0.2초 동안은 안맞게
 	if (timeHit.asMilliseconds() - lastHit.asMilliseconds() > immuneMs)
 	{
+		std::cout << timeHit.asSeconds() << std::endl;
 		lastHit = timeHit;
 		health -= 10;
 		return true;

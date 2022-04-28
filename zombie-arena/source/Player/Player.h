@@ -25,6 +25,7 @@ private:
 	
 	std::string textureFileName;
 	Sprite sprite;
+	Sprite bullet;
 	Texture texture;
 	//해상도 설정
 	Vector2i resolution;
